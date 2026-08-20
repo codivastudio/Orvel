@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orvél | Silent Power</title>
+    
+    <!-- Preconnect Resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://images.unsplash.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --black: #000000;
+            --white: #ffffff;
+            --gray: #888888;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: var(--black);
+            color: var(--white);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+            text-rendering: optimizeSpeed;
+        }
+
+        h1, h2, .logo {
+            font-family: 'Playfair Display', serif;
+            text-transform: uppercase;
+            letter-spacing: clamp(2px, 0.5vw, 5px);
+        }
+
+        /* Loading Screen */
+        .loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: var(--black); display: flex; justify-content: center;
+            align-items: center; z-index: 9999; transition: opacity 0.5s ease, visibility 0.5s;
+        }
+        .loader-text { 
+            font-size: clamp(1.2rem, 3vw, 2rem); 
+            letter-spacing: clamp(6px, 1.5vw, 12px); 
+            animation: pulse 1.5s infinite; 
+        }
+        @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+        /* Navigation fixed flush to top */
+        nav {
+            position: fixed; 
+            top: 0; 
+            left: 0;
+            width: 100%; 
+            padding: 20px clamp(20px, 5vw, 50px);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            z-index: 1000; 
+            transition: background 0.3s ease, padding 0.3s ease;
+            will-change: background, padding;
+        }
+        nav.scrolled {
+            padding: 15px clamp(20px, 5vw, 50px); 
+            background: rgba(0, 0, 0, 0.98);
+            border-bottom: 1px solid #222;
+        }
+        .logo { font-size: clamp(1.2rem, 2vw, 1.6rem); text-decoration: none; color: var(--white); z-index: 1001; }
+        
+        .nav-links { display: flex; gap: clamp(15px, 2.5vw, 35px); list-style: none; }
+        .nav-links a {
+            text-decoration: none; color: var(--white); font-size: 0.75rem;
+            text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s;
+            padding: 5px 0;
+        }
+        .nav-links a:hover { color: var(--gray); }
+
+        .menu-toggle {
+            display: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1001;
+            padding: 5px;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh; 
+            min-height: 100dvh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), 
+                        url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop');
+            background-size: cover; background-position: center;
+            padding: 120px 20px 60px 20px;
+        }
+        .hero h1 { 
+            font-size: clamp(2.5rem, 8vw, 6rem); 
+            margin-bottom: 10px; 
+            opacity: 0; 
+            transform: translateY(20px); 
+            will-change: opacity, transform;
+        }
+        .hero p { 
+            font-size: clamp(0.75rem, 2vw, 1.2rem); 
+            letter-spacing: clamp(4px, 1vw, 8px); 
+            text-transform: uppercase; 
+            margin-bottom: 35px; 
+            opacity: 0; 
+            will-change: opacity, transform;
+        }
+        .shop-btn {
+            padding: clamp(12px, 2vw, 16px) clamp(28px, 4vw, 45px); 
+            border: 1px solid var(--white);
+            color: var(--white); text-decoration: none; text-transform: uppercase;
+            font-size: 0.8rem; letter-spacing: 2px; transition: background 0.3s, color 0.3s; opacity: 0;
+            display: inline-block;
+            will-change: opacity, transform;
+        }
+        .shop-btn:hover { background: var(--white); color: var(--black); }
+
+        /* Sections Structure */
+        section { 
+            padding: clamp(60px, 10vh, 120px) clamp(15px, 8vw, 10%); 
+            text-align: center; 
+        }
+        section h2 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            margin-bottom: 15px;
+        }
+        
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; will-change: opacity, transform; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* About Section */
+        .about-quote {
+            font-style: italic; 
+            color: var(--gray); 
+            font-size: clamp(1rem, 2.5vw, 1.3rem); 
+            margin-bottom: 20px;
+        }
+        .about-text {
+            max-width: 650px; 
+            margin: 0 auto; 
+            font-weight: 200;
+            font-size: clamp(0.85rem, 1.5vw, 1rem);
+        }
+
+        /* Product Grid System */
+        .product-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(clamp(200px, 22vw, 280px), 1fr));
+            gap: clamp(20px, 3vw, 40px); 
+            margin-top: clamp(30px, 5vh, 60px); 
+            text-align: center;
+        }
+        .product-card {
+            width: 100%;
+            overflow: hidden;
+        }
+        .product-card img {
+            width: 100%; 
+            aspect-ratio: 3/4; 
+            object-fit: cover;
+            filter: grayscale(100%); 
+            transition: transform 0.5s ease, filter 0.5s ease;
+            will-change: transform, filter;
+            background-color: #111;
+        }
+        .product-card:hover img { transform: scale(1.03); filter: grayscale(0%); }
+        .product-info { 
+            margin-top: 15px; 
+            font-size: clamp(0.75rem, 1.2vw, 0.9rem); 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+
+        /* Footer & Contact System */
+        footer {
+            padding: clamp(50px, 8vh, 100px) clamp(15px, 8vw, 10%); 
+            background-color: #050505;
+            text-align: center; 
+            border-top: 1px solid #111;
+        }
+        
+        .contact-icons-wrapper {
+            display: flex; 
+            justify-content: center; 
+            flex-wrap: wrap;
+            gap: clamp(25px, 5vw, 50px); 
+            margin-bottom: clamp(40px, 6vh, 60px);
+        }
+        .icon-item {
+            display: flex; flex-direction: column; align-items: center;
+            text-decoration: none; color: var(--white); transition: color 0.3s, transform 0.3s;
+            min-width: 60px;
+        }
+        .icon-item i { font-size: clamp(1.4rem, 3vw, 1.8rem); margin-bottom: 10px; }
+        .icon-item span { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.6; }
+        .icon-item:hover { color: var(--gray); transform: translateY(-5px); }
+
+        .copyright { font-size: 0.6rem; color: #444; letter-spacing: 2px; text-transform: uppercase; }
+
+        /* Animation Trigger */
+        .show { opacity: 1 !important; transform: translateY(0) !important; transition: opacity 1s ease, transform 1s ease; }
+
+        /* Media Queries Breakdown */
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                height: 100vh;
+                height: 100dvh;
+                width: 80%;
+                max-width: 320px;
+                background: rgba(5, 5, 5, 0.98);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 35px;
+                transition: right 0.3s ease;
+                border-left: 1px solid #1a1a1a;
+            }
+            .nav-links.active {
+                right: 0;
+            }
+            .nav-links a {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="loader" id="loader">
+        <div class="loader-text">ORVÉL</div>
+    </div>
+
+    <nav id="navbar">
+        <a href="#" class="logo">ORVÉL</a>
+        <div class="menu-toggle" id="menu-toggle" aria-label="Toggle Navigation Menu">
+            <i class="fas fa-bars"></i>
+        </div>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#shop">Shop</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero" id="home">
+        <h1 id="hero-title">ORVÉL</h1>
+        <p id="hero-slogan">Silent Power</p>
+        <a href="#shop" class="shop-btn" id="hero-btn">Shop Now</a>
+    </section>
+
+    <section class="about" id="about">
+        <div class="reveal">
+            <h2>The Essence</h2>
+            <p class="about-quote">"Silent Power is not spoken, it is worn."</p>
+            <p class="about-text">
+                Orvél defines luxury through restraint. Every piece is a statement of power, crafted in a world of absolute black and white.
+            </p>
+        </div>
+    </section>
+
+    <section id="shop">
+        <h2 class="reveal">New Arrivals</h2>
+        <div class="product-grid">
+            <div class="product-card reveal">
+                <img src="https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=600&auto=format&fit=crop" width="600" height="800" loading="lazy" alt="Onyx Overcoat">
+                <div class="product-info">Onyx Overcoat</div>
+            </div>
+            <div class="product-card reveal">
+                <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop" width="600" height="800" loading="lazy" alt="Silent Dress">
+                <div class="product-info">Silent Dress</div>
+            </div>
+            <div class="product-card reveal">
+                <img src="https://images.unsplash.com/photo-1550639525-c97d455acf70?q=80&w=600&auto=format&fit=crop" width="600" height="800" loading="lazy" alt="Monolith Pants">
+                <div class="product-info">Monolith Pants</div>
+            </div>
+            <div class="product-card reveal">
+                <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600&auto=format&fit=crop" width="600" height="800" loading="lazy" alt="Shadow Blazer">
+                <div class="product-info">Shadow Blazer</div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="reveal">
+            <h2>Connect With Orvél</h2>
+            
+            <div class="contact-icons-wrapper">
+                <a href="tel:0549169694" class="icon-item">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>Call</span>
+                </a>
+                
+                <a href="mailto:yassinmoghrani07@gmail.com" class="icon-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>Email</span>
+                </a>
+                
+                <a href="https://www.instagram.com/orvel_sp" target="_blank" rel="noopener" class="icon-item">
+                    <i class="fab fa-instagram"></i>
+                    <span>Instagram</span>
+                </a>
+                
+                <a href="https://www.facebook.com/profile.php?id=61571986888941" target="_blank" rel="noopener" class="icon-item">
+                    <i class="fab fa-facebook-f"></i>
+                    <span>Facebook</span>
+                </a>
+            </div>
+
+            <p class="copyright">&copy; 2026 ORVÉL LUXURY. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            const navbar = document.getElementById('navbar');
+            const loader = document.getElementById('loader');
+            const heroTitle = document.getElementById('hero-title');
+            const heroSlogan = document.getElementById('hero-slogan');
+            const heroBtn = document.getElementById('hero-btn');
+            const reveals = document.querySelectorAll(".reveal");
+
+            function toggleMenu() {
+                navLinks.classList.toggle('active');
+                const icon = menuToggle.querySelector('i');
+                if (navLinks.classList.contains('active')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            }
+
+            menuToggle.addEventListener('click', toggleMenu);
+
+            document.addEventListener('click', (e) => {
+                if (navLinks.classList.contains('active') && !navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
+                    toggleMenu();
+                }
+            });
+
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navLinks.classList.contains('active')) toggleMenu();
+                });
+            });
+
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.visibility = 'hidden';
+                    heroTitle.classList.add('show');
+                    setTimeout(() => heroSlogan.classList.add('show'), 200);
+                    setTimeout(() => heroBtn.classList.add('show'), 400);
+                }, 500);
+            }, 300);
+
+            let isTicking = false;
+            
+            function onScroll() {
+                if (window.scrollY > 20) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+
+                const windowHeight = window.innerHeight;
+                reveals.forEach(el => {
+                    if (el.getBoundingClientRect().top < windowHeight - 80) {
+                        el.classList.add("active");
+                    }
+                });
+
+                isTicking = false;
+            }
+
+            window.addEventListener('scroll', () => {
+                if (!isTicking) {
+                    window.requestAnimationFrame(onScroll);
+                    isTicking = true;
+                }
+            }, { passive: true });
+
+            onScroll();
+        });
+    </script>
+</body>
+</html>
